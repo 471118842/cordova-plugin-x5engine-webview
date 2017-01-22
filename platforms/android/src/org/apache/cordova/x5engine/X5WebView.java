@@ -22,6 +22,7 @@ package org.apache.cordova.x5engine;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
+
 import com.tencent.smtt.sdk.WebChromeClient;
 import com.tencent.smtt.sdk.WebView;
 import com.tencent.smtt.sdk.WebViewClient;
@@ -34,55 +35,55 @@ import org.apache.cordova.CordovaWebViewEngine;
  * Custom WebView subclass that enables us to capture events needed for Cordova.
  */
 public class X5WebView extends WebView implements CordovaWebViewEngine.EngineView {
-    private X5WebViewClient viewClient;
-    X5WebChromeClient chromeClient;
-    private X5WebViewEngine parentEngine;
-    private CordovaInterface cordova;
+  private X5WebViewClient viewClient;
+  X5WebChromeClient chromeClient;
+  private X5WebViewEngine parentEngine;
+  private CordovaInterface cordova;
 
-    public X5WebView(Context context) {
-        this(context, null);
+  public X5WebView(Context context) {
+    this(context, null);
+  }
+
+  public X5WebView(Context context, AttributeSet attrs) {
+    super(context, attrs);
+  }
+
+  // Package visibility to enforce that only X5WebViewEngine should call this method.
+  void init(X5WebViewEngine parentEngine, CordovaInterface cordova) {
+    this.cordova = cordova;
+    this.parentEngine = parentEngine;
+    if (this.viewClient == null) {
+      setWebViewClient(new X5WebViewClient(parentEngine));
     }
 
-    public X5WebView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+    if (this.chromeClient == null) {
+      setWebChromeClient(new X5WebChromeClient(parentEngine));
     }
+  }
 
-    // Package visibility to enforce that only X5WebViewEngine should call this method.
-    void init(X5WebViewEngine parentEngine, CordovaInterface cordova) {
-        this.cordova = cordova;
-        this.parentEngine = parentEngine;
-        if (this.viewClient == null) {
-            setWebViewClient(new X5WebViewClient(parentEngine));
-        }
+  @Override
+  public CordovaWebView getCordovaWebView() {
+    return parentEngine != null ? parentEngine.getCordovaWebView() : null;
+  }
 
-        if (this.chromeClient == null) {
-            setWebChromeClient(new X5WebChromeClient(parentEngine));
-        }
+  @Override
+  public void setWebViewClient(WebViewClient client) {
+    viewClient = (X5WebViewClient) client;
+    super.setWebViewClient(client);
+  }
+
+  @Override
+  public void setWebChromeClient(WebChromeClient client) {
+    chromeClient = (X5WebChromeClient) client;
+    super.setWebChromeClient(client);
+  }
+
+  @Override
+  public boolean dispatchKeyEvent(KeyEvent event) {
+    Boolean ret = parentEngine.client.onDispatchKeyEvent(event);
+    if (ret != null) {
+      return ret.booleanValue();
     }
-
-    @Override
-    public CordovaWebView getCordovaWebView() {
-        return parentEngine != null ? parentEngine.getCordovaWebView() : null;
-    }
-
-    @Override
-    public void setWebViewClient(WebViewClient client) {
-        viewClient = (X5WebViewClient)client;
-        super.setWebViewClient(client);
-    }
-
-    @Override
-    public void setWebChromeClient(WebChromeClient client) {
-        chromeClient = (X5WebChromeClient)client;
-        super.setWebChromeClient(client);
-    }
-
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-        Boolean ret = parentEngine.client.onDispatchKeyEvent(event);
-        if (ret != null) {
-            return ret.booleanValue();
-        }
-        return super.dispatchKeyEvent(event);
-    }
+    return super.dispatchKeyEvent(event);
+  }
 }

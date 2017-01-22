@@ -19,7 +19,7 @@
 package org.apache.cordova.x5engine;
 
 import android.webkit.JavascriptInterface;
-import android.os.Looper;
+
 import org.apache.cordova.CordovaBridge;
 import org.apache.cordova.ExposedJsApi;
 import org.json.JSONException;
@@ -38,9 +38,6 @@ class X5ExposedJsApi implements ExposedJsApi {
 
     @JavascriptInterface
     public String exec(int bridgeSecret, String service, String action, String callbackId, String arguments) throws JSONException, IllegalAccessException {
-        if (Looper.myLooper() == null) {
-            Looper.prepare();
-        }
         return bridge.jsExec(bridgeSecret, service, action, callbackId, arguments);
     }
 
